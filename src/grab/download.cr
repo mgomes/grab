@@ -4,14 +4,15 @@ module Grab
   class Download
     BLOCK_SIZE = 4096
 
-    getter :filename
+    getter :filename, :num_parts
 
-    def initialize(filename: String)
+    def initialize(filename : String, num_parts : Int32)
       @filename = filename
+      @num_parts = num_parts
     end
 
     def combine
-      parts = (0..(CONCURRENCY-1)).map { |i| "download.part#{i}" }
+      parts = (0..(num_parts-1)).map { |i| "download.part#{i}" }
 
       File.open(filename, "w") do |file|
         parts.each do |part|
