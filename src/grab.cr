@@ -33,6 +33,14 @@ module Grab
       exit
     end
 
+    parser.on "-c NUMBER", "--concurrency=NUMBER", "The number of concurrent HTTP connections (default: 8)" do |num|
+      concurrency = num.to_i32
+    end
+
+    parser.on "-f FILENAME", "--filename=NAME", "The local filename to store the download (default: server specified)" do |name|
+      filename = name
+    end
+
     if ARGV[0]?
       uri = ARGV[0]
     else
@@ -48,14 +56,6 @@ module Grab
     parser.invalid_option do |option_flag|
       msg = "unrecognized option #{option_flag}\n#{parser}"
       Grab.fail_with_help(msg)
-    end
-
-    parser.on "-c NUMBER", "--concurrency=NUMBER", "The number of concurrent HTTP connections (default: 8)" do |num|
-      concurrency = num.to_i32
-    end
-
-    parser.on "-f FILENAME", "--filename=NAME", "The local filename to store the download (default: server specified)" do |name|
-      filename = name
     end
   end
 
