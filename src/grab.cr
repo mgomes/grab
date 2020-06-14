@@ -8,6 +8,7 @@ module Grab
 
   concurrency = 8_i32
   filename = ""
+  uri = ""
 
   # Prints usage error in the program arguments and terminates the program.
   def self.fail_with_help(msg : String)
@@ -32,7 +33,9 @@ module Grab
       exit
     end
 
-    if ARGV[0].blank?
+    if ARGV[0]?
+      uri = ARGV[0]
+    else
       msg = "missing URI\n#{parser}"
       Grab.fail_with_help(msg)
     end
@@ -56,7 +59,7 @@ module Grab
     end
   end
 
-  network = Grab::Network.new(uri: ARGV[0], concurrency: concurrency, filename: filename)
+  network = Grab::Network.new(uri: uri, concurrency: concurrency, filename: filename)
   network.fetch
   download = Grab::Download.new(filename: network.filename, num_parts: concurrency)
   download.combine
