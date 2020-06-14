@@ -78,11 +78,11 @@ module Grab
     private def get_filename(header : String) : String
       matches = header.match(/(filename=)(?<filename>.+)\z/)
       if matches.nil? || matches.named_captures["filename"].nil?
-        err = "Filename was not sent by the server. Please specify the desired filename with -f"
+        err = "Filename was not sent by the server. Please specify the output filename with -f"
         Grab.fail_with_help(msg: err)
       end
 
-      matches.named_captures["filename"] || ""
+      matches.named_captures["filename"].to_s
     end
 
   end
