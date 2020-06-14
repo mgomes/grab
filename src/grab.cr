@@ -64,4 +64,5 @@ module Grab
   download = Grab::Download.new(filename: network.filename, num_parts: concurrency)
   download.combine
 
+  puts "Done!"
 end
