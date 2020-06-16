@@ -92,7 +92,7 @@ module Grab
     end
 
     private def write_buffer(src, dst) : Int64
-      buffer = uninitialized UInt8[8192]
+      buffer = uninitialized UInt8[4096]
       count = 0_i64
       while (len = src.read(buffer.to_slice).to_i32) > 0
         dst.write buffer.to_slice[0, len]
