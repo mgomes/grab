@@ -5,7 +5,7 @@ module Grab
 
     @chunk_size : UInt64
 
-    getter :uri, :concurrency, :chunk_size, :ch, :filesize, :filename
+    getter :uri, :concurrency, :chunk_size, :ch, :filesize, :filename, :bar
 
     def initialize(uri : String, concurrency : Int32, filename : String)
       @uri = uri
@@ -15,17 +15,21 @@ module Grab
       fetch_file_metadata
       @chunk_size = @filesize // @concurrency
       @ch = Channel(Nil).new(@concurrency)
+
+      @bar = ProgressBar.new
+      @bar.complete = "="
+      @bar.incomplete = " "
+      @bar.total = @filesize
     end
 
     def grab(start_byte : UInt64, end_byte : UInt64, part : Int32)
       spawn do
         headers = HTTP::Headers.new
         headers.add("Range", "bytes=#{start_byte}-#{end_byte}")
-
-        puts "Starting download of part #{part}..."
-
         HTTP::Client.get(uri, headers) do |response|
-          File.write("download.part#{part}", response.body_io)
+          File.open("download.part#{part}", "w") do |file|
+            write_buffer(response.body_io, file)
+          end
         end
         ch.send(nil)
       end
@@ -54,6 +58,8 @@ module Grab
       start_byte = 0_u64
       end_byte = 0_u64
       ranges = [] of Tuple(UInt64, UInt64)
+
+      puts "Downloading #{filename}..."
 
       concurrency.times do |i|
         start_byte = i == 0 ? start_byte : end_byte + 1
@@ -85,5 +91,15 @@ module Grab
       matches.named_captures["filename"].to_s
     end
 
+    private def write_buffer(src, dst) : Int64
+      buffer = uninitialized UInt8[8192]
+      count = 0_i64
+      while (len = src.read(buffer.to_slice).to_i32) > 0
+        dst.write buffer.to_slice[0, len]
+        @bar.tick(len)
+        count &+= len
+      end
+      count
+    end
   end
 end

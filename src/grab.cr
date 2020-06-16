@@ -59,10 +59,19 @@ module Grab
     end
   end
 
-  network = Grab::Network.new(uri: uri, concurrency: concurrency, filename: filename)
+  network = Grab::Network.new(
+    uri: uri,
+    concurrency: concurrency,
+    filename: filename
+  )
   network.fetch
-  download = Grab::Download.new(filename: network.filename, num_parts: concurrency)
+
+  download = Grab::Download.new(
+    filename: network.filename,
+    num_parts: concurrency,
+    filesize: network.filesize
+  )
   download.combine
 
-  puts "Done!"
+  puts "\nDone!"
 end
