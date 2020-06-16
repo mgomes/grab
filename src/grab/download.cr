@@ -25,12 +25,13 @@ module Grab
 
       File.open(filename, "w") do |file|
         parts.each do |part|
-          dl_part = File.new(part)
+          dl_part = File.open(part)
 
           loop do
-            part_bytes = dl_part.gets(limit: BLOCK_SIZE)
-            if part_bytes
-              file.print(part_bytes)
+            slice = Bytes.new(BLOCK_SIZE)
+            read_bytes = dl_part.read(slice)
+            if read_bytes > 0
+              file.write(slice)
               @bar.tick(BLOCK_SIZE)
             else
               break
