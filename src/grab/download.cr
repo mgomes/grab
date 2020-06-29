@@ -29,10 +29,12 @@ module Grab
 
           loop do
             slice = Bytes.new(BLOCK_SIZE)
-            read_bytes = dl_part.read(slice)
-            if read_bytes > 0
-              file.write(slice)
-              @bar.tick(BLOCK_SIZE)
+            bytes_read = dl_part.read(slice)
+            if bytes_read > 0
+              # we may have read < BLOCK_SIZE, like in the case
+              # where we are at the end of the file
+              file.write(slice[0..(bytes_read - 1)])
+              @bar.tick(bytes_read)
             else
               break
             end
