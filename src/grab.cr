@@ -4,7 +4,7 @@ require "./grab/download"
 
 # TODO: Write documentation for `Grab`
 module Grab
-  VERSION = "0.9.0"
+  VERSION = "0.10.0"
 
   concurrency = 8_i32
   filename = ""
