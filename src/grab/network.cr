@@ -1,4 +1,5 @@
 require "http/client"
+require "./utils/content_disposition"
 
 module Grab
   class Network
@@ -41,7 +42,7 @@ module Grab
         if (200..299).includes?(response.status_code)
           @filesize = response.headers["Content-Length"].to_u64
           if filename.blank?
-            @filename = get_filename(header: response.headers["Content-Disposition"])
+            @filename = get_filename(headers: response.headers)
           end
 
           break
@@ -81,14 +82,16 @@ module Grab
       concurrency.times { ch.receive }
     end
 
-    private def get_filename(header : String) : String
-      matches = header.match(/(filename=)(?<filename>.+)\z/)
-      if matches.nil? || matches.named_captures["filename"].nil?
-        err = "Filename was not sent by the server. Please specify the output filename with -f"
-        Grab.fail_with_help(msg: err)
+    private def get_filename(headers : HTTP::Headers) : String
+      content_disposition = ContentDisposition.new(headers: headers)
+      filename = content_disposition.filename
+
+      # Just use the URI
+      if filename.nil?
+        filename = @uri.split('/').last
       end
 
-      matches.named_captures["filename"].to_s
+      filename
     end
 
     private def write_buffer(src, dst) : Int64
