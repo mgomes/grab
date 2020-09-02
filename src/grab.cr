@@ -16,62 +16,67 @@ module Grab
     exit(1)
   end
 
-  OptionParser.parse! do |parser|
-    parser.banner = <<-TEXT
-      Downloads a file utilizing concurrent HTTP connections to accelerate the download speed.
+  # This method is intended to be used for the CLI program.
+  # The reason is that by encapsulating it, tdiff can be required as a library,
+  # and the `main.cr` file actually calls this function.
+  def self.main
+    OptionParser.parse do |parser|
+      parser.banner = <<-TEXT
+        Downloads a file utilizing concurrent HTTP connections to accelerate the download speed.
 
-      Usage: grab <URI> [arguments]
-    TEXT
+        Usage: grab <URI> [arguments]
+      TEXT
 
-    parser.on("-v", "--version", "Prints the program version") do
-      puts VERSION
-      exit
+      parser.on("-v", "--version", "Prints the program version") do
+        puts VERSION
+        exit
+      end
+
+      parser.on("-h", "--help", "Show this help") do
+        puts parser
+        exit
+      end
+
+      parser.on "-c NUMBER", "--concurrency=NUMBER", "The number of concurrent HTTP connections (default: 8)" do |num|
+        concurrency = num.to_i32
+      end
+
+      parser.on "-f FILENAME", "--filename=NAME", "The local filename to store the download (default: server specified)" do |name|
+        filename = name
+      end
+
+      if ARGV[0]?
+        uri = ARGV[0]
+      else
+        msg = "missing URI\n#{parser}"
+        Grab.fail_with_help(msg)
+      end
+
+      parser.missing_option do |option_flag|
+        msg = "#{option_flag} expected an argument\n#{parser}"
+        Grab.fail_with_help(msg)
+      end
+
+      parser.invalid_option do |option_flag|
+        msg = "unrecognized option #{option_flag}\n#{parser}"
+        Grab.fail_with_help(msg)
+      end
     end
 
-    parser.on("-h", "--help", "Show this help") do
-      puts parser
-      exit
-    end
+    network = Grab::Network.new(
+      uri: uri,
+      concurrency: concurrency,
+      filename: filename
+    )
+    network.fetch
 
-    parser.on "-c NUMBER", "--concurrency=NUMBER", "The number of concurrent HTTP connections (default: 8)" do |num|
-      concurrency = num.to_i32
-    end
+    download = Grab::Download.new(
+      filename: network.filename,
+      num_parts: concurrency,
+      filesize: network.filesize
+    )
+    download.combine
 
-    parser.on "-f FILENAME", "--filename=NAME", "The local filename to store the download (default: server specified)" do |name|
-      filename = name
-    end
-
-    if ARGV[0]?
-      uri = ARGV[0]
-    else
-      msg = "missing URI\n#{parser}"
-      Grab.fail_with_help(msg)
-    end
-
-    parser.missing_option do |option_flag|
-      msg = "#{option_flag} expected an argument\n#{parser}"
-      Grab.fail_with_help(msg)
-    end
-
-    parser.invalid_option do |option_flag|
-      msg = "unrecognized option #{option_flag}\n#{parser}"
-      Grab.fail_with_help(msg)
-    end
+    puts "\nDone!"
   end
-
-  network = Grab::Network.new(
-    uri: uri,
-    concurrency: concurrency,
-    filename: filename
-  )
-  network.fetch
-
-  download = Grab::Download.new(
-    filename: network.filename,
-    num_parts: concurrency,
-    filesize: network.filesize
-  )
-  download.combine
-
-  puts "\nDone!"
 end

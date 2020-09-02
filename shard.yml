@@ -6,7 +6,7 @@ authors:
 
 targets:
   grab:
-    main: src/grab.cr
+    main: main.cr
 
 crystal: 0.35.1
 
