@@ -1,17 +1,17 @@
-# Class for working with "content-disposition" headers
+require "mime/media_type"
+
 class ContentDisposition
-  DISPOSITION_REGEX = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+  getter filename : String | Nil
 
   def initialize(headers : HTTP::Headers)
-    @matches = [] of String | Nil
-
     if headers.has_key?("Content-Disposition")
       disposition_header = headers["Content-Disposition"]
-      @matches = disposition_header.match(DISPOSITION_REGEX).not_nil!.to_a
+      parse_disposition(disposition_header)
     end
   end
 
-  def filename
-    @matches[1]?
+  private def parse_disposition(disposition_header)
+    media_type = MIME::MediaType.parse(disposition_header)
+    @filename = media_type["filename"]
   end
 end

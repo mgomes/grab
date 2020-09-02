@@ -3,10 +3,9 @@ require "./utils/content_disposition"
 
 module Grab
   class Network
-
     @chunk_size : UInt64
 
-    getter :uri, :concurrency, :chunk_size, :ch, :filesize, :filename, :bar
+    getter uri, concurrency, chunk_size, ch, filesize, filename, bar
 
     def initialize(uri : String, concurrency : Int32, filename : String)
       @uri = uri
@@ -72,7 +71,7 @@ module Grab
           end_byte = end_byte + chunk_size - 1
         end
 
-        ranges << { start_byte, end_byte }
+        ranges << {start_byte, end_byte}
       end
 
       ranges.each_with_index do |range, i|
