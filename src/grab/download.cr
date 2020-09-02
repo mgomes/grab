@@ -5,7 +5,7 @@ module Grab
   class Download
     BLOCK_SIZE = 8192
 
-    getter :filename, :num_parts
+    getter filename, num_parts
 
     def initialize(filename : String, num_parts : Int32, filesize : UInt64)
       @filename = filename
@@ -19,7 +19,7 @@ module Grab
     end
 
     def combine
-      parts = (0..(num_parts-1)).map { |i| "download.part#{i}" }
+      parts = (0..(num_parts - 1)).map { |i| "download.part#{i}" }
 
       puts "\n\nCombining downloaded parts..."
 
