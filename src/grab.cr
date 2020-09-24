@@ -6,10 +6,6 @@ require "./grab/download"
 module Grab
   VERSION = "0.10.0"
 
-  concurrency = 8_i32
-  filename = ""
-  uri = ""
-
   # Prints usage error in the program arguments and terminates the program.
   def self.fail_with_help(msg : String)
     STDERR.puts "ERROR: #{msg}"
@@ -20,6 +16,10 @@ module Grab
   # The reason is that by encapsulating it, tdiff can be required as a library,
   # and the `main.cr` file actually calls this function.
   def self.main
+    concurrency = 8_i32
+    filename = ""
+    uri = ""
+
     OptionParser.parse do |parser|
       parser.banner = <<-TEXT
         Downloads a file utilizing concurrent HTTP connections to accelerate the download speed.
