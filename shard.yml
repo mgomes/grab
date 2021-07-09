@@ -8,6 +8,6 @@ targets:
   grab:
     main: main.cr
 
-crystal: 0.35.1
+crystal: 1.0
 
 license: MIT
